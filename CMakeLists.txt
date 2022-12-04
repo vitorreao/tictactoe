@@ -8,7 +8,7 @@ find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 
 # Create your game executable target as usual 
-add_executable(tictactoe WIN32 main.c)
+add_executable(tictactoe WIN32 main.c board.h board.c manager.h manager.c resources.h resources.c)
 
 # SDL2::SDL2main may or may not be available. It is e.g. required by Windows GUI applications  
 if(TARGET SDL2::SDL2main)
