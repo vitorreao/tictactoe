@@ -24,6 +24,8 @@ SDL_Texture *load_png_image(const char *path, SDL_Renderer *renderer)
 		return NULL;
 	}
 
+	SDL_SetColorKey(file_surface, SDL_TRUE, SDL_MapRGB(file_surface->format, 0xFF, 0, 0xFE));
+
 	texture = SDL_CreateTextureFromSurface(renderer, file_surface);
 	if (texture == NULL) {
 		printf("Unable to create texture from %s! SDL Error: %s\n", path, SDL_GetError());
