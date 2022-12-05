@@ -7,6 +7,8 @@ find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 # 1. Look for a SDL2 package, 2. Look for the SDL2maincomponent and 3. DO NOT fail when SDL2main is not available 
 find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 
+find_package(SDL2_image REQUIRED)
+
 # Create your game executable target as usual 
 add_executable(tictactoe WIN32 main.c board.h board.c manager.h manager.c resources.h resources.c)
 
@@ -17,4 +19,6 @@ if(TARGET SDL2::SDL2main)
 endif()
 
 # Link to the actual SDL2 library. SDL2::SDL2 is the shared SDL library, SDL2::SDL2-static is the static SDL libarary.
-target_link_libraries(tictactoe PRIVATE SDL2::SDL2-static)
+target_link_libraries(tictactoe PRIVATE SDL2::SDL2-static SDL2_image::SDL2_image-static)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/assets/board.png ${CMAKE_CURRENT_BINARY_DIR}/assets/board.png COPYONLY)

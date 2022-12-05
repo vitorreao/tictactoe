@@ -23,8 +23,11 @@ struct game_manager *init_game()
 		return NULL;
 	}
 
+	SDL_Surface *screen_surface = SDL_GetWindowSurface(gm->window);
+
 	gm->resources = new_game_resources();
-	if (gm->resources == NULL || load_game_resources(gm->resources) < 0) {
+	int load_out = load_game_resources(gm->resources, screen_surface->format);
+	if (gm->resources == NULL || load_out < 0) {
 		return NULL;
 	}
 
@@ -74,12 +77,13 @@ int init_sdl_window_and_renderer(struct game_manager *gm)
 
 void run_game_loop(struct game_manager *gm)
 {
-	SDL_SetRenderDrawColor(gm->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	SDL_Surface *screen_surface = SDL_GetWindowSurface(gm->window);
+	SDL_Surface *board = get_surface(gm->resources, RESOURCE_BOARD_IMAGE);
 	SDL_Event event;
 
 	while (1) {
-		SDL_RenderClear(gm->renderer);
-		SDL_RenderPresent(gm->renderer);
+		SDL_BlitSurface(board, NULL, screen_surface, NULL);
+		SDL_UpdateWindowSurface(gm->window);
 		if (SDL_WaitEvent(&event) && event.type == SDL_QUIT) {
 			break;
 		}
