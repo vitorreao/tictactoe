@@ -6,7 +6,7 @@
 #define NUMBER_OF_RESOURCES 1
 
 struct game_resources {
-	SDL_Surface **surfaces;
+	SDL_Texture **textures;
 };
 
 struct game_resources *new_game_resources()
@@ -14,9 +14,9 @@ struct game_resources *new_game_resources()
 	return malloc(sizeof(struct game_resources));
 }
 
-SDL_Surface *load_png_image(const char *path, const SDL_PixelFormat *fmt)
+SDL_Texture *load_png_image(const char *path, SDL_Renderer *renderer)
 {
-	SDL_Surface *optimized_surface = NULL;
+	SDL_Texture *texture = NULL;
 
 	SDL_Surface *file_surface = IMG_Load(path);
 	if (file_surface == NULL) {
@@ -24,41 +24,41 @@ SDL_Surface *load_png_image(const char *path, const SDL_PixelFormat *fmt)
 		return NULL;
 	}
 
-	optimized_surface = SDL_ConvertSurface(file_surface, fmt, 0);
-	if (optimized_surface == NULL) {
-		printf("Unable to optimize image %s! SDL Error: %s\n", path, SDL_GetError());
+	texture = SDL_CreateTextureFromSurface(renderer, file_surface);
+	if (texture == NULL) {
+		printf("Unable to create texture from %s! SDL Error: %s\n", path, SDL_GetError());
 		return NULL;
 	}
 
 	SDL_FreeSurface(file_surface);
 
-	return optimized_surface;
+	return texture;
 }
 
-int load_game_resources(struct game_resources *gr, const SDL_PixelFormat *fmt)
+int load_game_resources(struct game_resources *gr, SDL_Renderer *renderer)
 {
-	gr->surfaces = malloc(sizeof(SDL_Surface *) * NUMBER_OF_RESOURCES);
+	gr->textures = malloc(sizeof(SDL_Texture *) * NUMBER_OF_RESOURCES);
 
-	SDL_Surface *board_surface = load_png_image("assets/board.png", fmt);
-	if (board_surface == NULL) {
+	SDL_Texture *board_texture = load_png_image("assets/board.png", renderer);
+	if (board_texture == NULL) {
 		return -1;
 	} else {
-		gr->surfaces[RESOURCE_BOARD_IMAGE] = board_surface;
+		gr->textures[RESOURCE_BOARD_IMAGE] = board_texture;
 	}
 
 	return 0;
 }
 
-SDL_Surface *get_surface(struct game_resources *gr, int surface_index)
+SDL_Texture *get_resource_texture(struct game_resources *gr, int texture_index)
 {
-	return gr->surfaces[surface_index];
+	return gr->textures[texture_index];
 }
 
 void destroy_game_resources(struct game_resources *gr)
 {
 	for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-		SDL_FreeSurface(gr->surfaces[i]);
-		gr->surfaces[i] = NULL;
+		SDL_DestroyTexture(gr->textures[i]);
+		gr->textures[i] = NULL;
 	}
 	free(gr);
 }

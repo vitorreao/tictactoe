@@ -23,10 +23,8 @@ struct game_manager *init_game()
 		return NULL;
 	}
 
-	SDL_Surface *screen_surface = SDL_GetWindowSurface(gm->window);
-
 	gm->resources = new_game_resources();
-	int load_out = load_game_resources(gm->resources, screen_surface->format);
+	int load_out = load_game_resources(gm->resources, gm->renderer);
 	if (gm->resources == NULL || load_out < 0) {
 		return NULL;
 	}
@@ -62,10 +60,17 @@ int init_sdl_window_and_renderer(struct game_manager *gm)
 		return -1;
 	}
 
-	renderer = SDL_CreateRenderer(game_window, -1, 0);
+	renderer = SDL_CreateRenderer(game_window, -1, SDL_RENDERER_ACCELERATED);
 
 	if (renderer == NULL) {
 		printf("Renderer could not be created! Error: %s\n", SDL_GetError());
+		return -1;
+	}
+
+	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+
+	if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+		printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
 		return -1;
 	}
 
@@ -77,21 +82,27 @@ int init_sdl_window_and_renderer(struct game_manager *gm)
 
 void run_game_loop(struct game_manager *gm)
 {
-	SDL_Surface *screen_surface = SDL_GetWindowSurface(gm->window);
-	SDL_Surface *board = get_surface(gm->resources, RESOURCE_BOARD_IMAGE);
+	SDL_Texture *board = get_resource_texture(gm->resources, RESOURCE_BOARD_IMAGE);
 	SDL_Event event;
 
 	while (1) {
-		SDL_BlitSurface(board, NULL, screen_surface, NULL);
-		SDL_UpdateWindowSurface(gm->window);
 		if (SDL_WaitEvent(&event) && event.type == SDL_QUIT) {
 			break;
 		}
+		SDL_RenderClear(gm->renderer);
+		SDL_RenderCopy(gm->renderer, board, NULL, NULL);
+		SDL_RenderPresent(gm->renderer);
 	}
 }
 
 void quit_game(struct game_manager *gm)
 {
+	destroy_game_resources(gm->resources);
+	gm->resources = NULL;
+
+	destroy_game_board(gm->board);
+	gm->board = NULL;
+
 	if (gm->renderer != NULL) {
 		SDL_DestroyRenderer(gm->renderer);
 	}
@@ -102,12 +113,7 @@ void quit_game(struct game_manager *gm)
 	}
 	gm->window = NULL;
 
-	destroy_game_resources(gm->resources);
-	gm->resources = NULL;
-
-	destroy_game_board(gm->board);
-	gm->board = NULL;
-
+	IMG_Quit();
 	SDL_Quit();
 
 	free(gm);

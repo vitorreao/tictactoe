@@ -9,9 +9,9 @@ struct game_resources;
 
 struct game_resources *new_game_resources();
 
-int load_game_resources(struct game_resources *gr, const SDL_PixelFormat *fmt);
+int load_game_resources(struct game_resources *gr, SDL_Renderer *renderer);
 
-SDL_Surface *get_surface(struct game_resources *gr, int surface_index);
+SDL_Texture *get_resource_texture(struct game_resources *gr, int texture_index);
 
 void destroy_game_resources(struct game_resources *gr);
 

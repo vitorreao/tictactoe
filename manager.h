@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <SDL_image.h>
 
 #ifndef GAME_MANAGER_H
 #define GAME_MANAGER_H
