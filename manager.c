@@ -67,8 +67,6 @@ int init_sdl_window_and_renderer(struct game_manager *gm)
 		return -1;
 	}
 
-	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
-
 	if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
 		printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
 		return -1;
@@ -86,11 +84,26 @@ void run_game_loop(struct game_manager *gm)
 	SDL_Event event;
 
 	while (1) {
-		if (SDL_WaitEvent(&event) && event.type == SDL_QUIT) {
+		int has_event = SDL_WaitEvent(&event);
+		if (has_event && event.type == SDL_QUIT) {
 			break;
 		}
+
+		SDL_SetRenderDrawColor(gm->renderer, 0x00, 0x00, 0x00, 0xFF);
 		SDL_RenderClear(gm->renderer);
+
+		if (has_event && event.type == SDL_MOUSEMOTION) {
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+			SDL_Rect *selected_rect = get_board_tile(x, y);
+			if (selected_rect != NULL) {
+				SDL_SetRenderDrawColor(gm->renderer, 0xFF, 0x00, 0x00, 0xFF);
+				SDL_RenderFillRect(gm->renderer, selected_rect);
+			}
+		}
+
 		SDL_RenderCopy(gm->renderer, board, NULL, NULL);
+
 		SDL_RenderPresent(gm->renderer);
 	}
 }
