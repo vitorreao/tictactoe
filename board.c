@@ -16,6 +16,11 @@ enum board_tile_name {
 	BOARD_TILE_BOTTOM_RIGHT,
 };
 
+enum tictactoe_player {
+	PLAYER_NOUGHT,
+	PLAYER_CROSS,
+};
+
 struct board_tile {
 	SDL_Rect             rect;
 	enum board_tile_name name;
@@ -34,10 +39,11 @@ static struct board_tile board_tiles[] = {
 };
 
 struct game_board {
-
+	enum tictactoe_player current_player;
+	enum tictactoe_player board[9];
 };
 
-SDL_Rect *get_board_tile(int x, int y)
+struct board_tile *get_board_tile(int x, int y)
 {
 	for (int i = 0; i < 9; i++) {
 		int x1 = board_tiles[i].rect.x;
@@ -45,15 +51,62 @@ SDL_Rect *get_board_tile(int x, int y)
 		int y1 = board_tiles[i].rect.y;
 		int y2 = board_tiles[i].rect.y + board_tiles[i].rect.h;
 		if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
-			return &board_tiles[i].rect;
+			return &board_tiles[i];
 		}
 	}
 	return NULL;
 }
 
+void tictactoe_play(struct game_board *board, int x, int y)
+{
+	struct board_tile *tile = get_board_tile(x, y);
+	if (tile == NULL) return;
+	int pos_value = board->board[tile->name];
+	if (pos_value >= 0) {
+		return;
+	}
+	board->board[tile->name] = board->current_player;
+	board->current_player = (board->current_player + 1) % 2;
+}
+
+void tictactoe_draw_board(
+	SDL_Renderer      *renderer,
+	SDL_Texture       *board_texture,
+	SDL_Texture       *nought_texture,
+	SDL_Texture       *cross_texture,
+	struct game_board *board)
+{
+	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+	SDL_RenderClear(renderer);
+
+	SDL_RenderCopy(renderer, board_texture, NULL, NULL);
+
+	for (int i = 0; i < 9; i++) {
+		int board_value = board->board[i];
+		if (board_value < 0) continue;
+		struct board_tile tile = board_tiles[i];
+		int x = tile.rect.x + (tile.rect.w / 2) - (165 / 2);
+		int y = tile.rect.y + (tile.rect.h / 2) - (115 / 2);
+		SDL_Rect dstrect = { x, y, 165, 115 };
+		SDL_Texture *tile_texture = NULL;
+		if (board_value == PLAYER_CROSS) {
+			tile_texture = cross_texture;
+		} else if (board_value == PLAYER_NOUGHT) {
+			tile_texture = nought_texture;
+		}
+		if (tile_texture == NULL) continue;
+		SDL_RenderCopy(renderer, tile_texture, NULL, &dstrect);
+	}
+}
+
 struct game_board *new_game_board()
 {
-	return malloc(sizeof(struct game_board));
+	struct game_board *gm = malloc(sizeof(struct game_board));
+	for (int i = 0; i < 9; i++) {
+		gm->board[i] = -1;
+	}
+	gm->current_player = PLAYER_CROSS;
+	return gm;
 }
 
 void destroy_game_board(struct game_board *gb)

@@ -4,6 +4,8 @@
 #define GAME_RESOURCES_H
 
 #define RESOURCE_BOARD_IMAGE 0
+#define RESOURCE_NOUGHT_IMAGE 1
+#define RESOURCE_CROSS_IMAGE 2
 
 struct game_resources;
 

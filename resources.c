@@ -48,6 +48,20 @@ int load_game_resources(struct game_resources *gr, SDL_Renderer *renderer)
 		gr->textures[RESOURCE_BOARD_IMAGE] = board_texture;
 	}
 
+	SDL_Texture *nought_texture = load_png_image("assets/nought.png", renderer);
+	if (nought_texture == NULL) {
+		return -1;
+	} else {
+		gr->textures[RESOURCE_NOUGHT_IMAGE] = nought_texture;
+	}
+
+	SDL_Texture *cross_texture = load_png_image("assets/cross.png", renderer);
+	if (cross_texture == NULL) {
+		return -1;
+	} else {
+		gr->textures[RESOURCE_CROSS_IMAGE] = cross_texture;
+	}
+
 	return 0;
 }
 

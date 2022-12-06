@@ -22,3 +22,5 @@ endif()
 target_link_libraries(tictactoe PRIVATE SDL2::SDL2-static SDL2_image::SDL2_image-static)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/assets/board.png ${CMAKE_CURRENT_BINARY_DIR}/assets/board.png COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/assets/nought.png ${CMAKE_CURRENT_BINARY_DIR}/assets/nought.png COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/assets/cross.png ${CMAKE_CURRENT_BINARY_DIR}/assets/cross.png COPYONLY)

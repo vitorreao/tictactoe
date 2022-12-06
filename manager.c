@@ -60,7 +60,7 @@ int init_sdl_window_and_renderer(struct game_manager *gm)
 		return -1;
 	}
 
-	renderer = SDL_CreateRenderer(game_window, -1, SDL_RENDERER_ACCELERATED);
+	renderer = SDL_CreateRenderer(game_window, -1, SDL_RENDERER_SOFTWARE);
 
 	if (renderer == NULL) {
 		printf("Renderer could not be created! Error: %s\n", SDL_GetError());
@@ -80,7 +80,9 @@ int init_sdl_window_and_renderer(struct game_manager *gm)
 
 void run_game_loop(struct game_manager *gm)
 {
-	SDL_Texture *board = get_resource_texture(gm->resources, RESOURCE_BOARD_IMAGE);
+	SDL_Texture *board_texture = get_resource_texture(gm->resources, RESOURCE_BOARD_IMAGE);
+	SDL_Texture *nought_texture = get_resource_texture(gm->resources, RESOURCE_NOUGHT_IMAGE);
+	SDL_Texture *cross_texture = get_resource_texture(gm->resources, RESOURCE_CROSS_IMAGE);
 	SDL_Event event;
 
 	while (1) {
@@ -89,20 +91,16 @@ void run_game_loop(struct game_manager *gm)
 			break;
 		}
 
-		SDL_SetRenderDrawColor(gm->renderer, 0x00, 0x00, 0x00, 0xFF);
-		SDL_RenderClear(gm->renderer);
-
-		if (has_event && event.type == SDL_MOUSEMOTION) {
-			int x, y;
-			SDL_GetMouseState(&x, &y);
-			SDL_Rect *selected_rect = get_board_tile(x, y);
-			if (selected_rect != NULL) {
-				SDL_SetRenderDrawColor(gm->renderer, 0xFF, 0x00, 0x00, 0xFF);
-				SDL_RenderFillRect(gm->renderer, selected_rect);
+		if (has_event && event.type == SDL_MOUSEBUTTONDOWN) {
+			SDL_MouseButtonEvent mouse_event = event.button;
+			if (mouse_event.button == SDL_BUTTON_LEFT) {
+				int x, y;
+				SDL_GetMouseState(&x, &y);
+				tictactoe_play(gm->board, x, y);
 			}
 		}
 
-		SDL_RenderCopy(gm->renderer, board, NULL, NULL);
+		tictactoe_draw_board(gm->renderer, board_texture, nought_texture, cross_texture, gm->board);
 
 		SDL_RenderPresent(gm->renderer);
 	}
