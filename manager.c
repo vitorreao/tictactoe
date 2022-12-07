@@ -60,7 +60,7 @@ int init_sdl_window_and_renderer(struct game_manager *gm)
 		return -1;
 	}
 
-	renderer = SDL_CreateRenderer(game_window, -1, SDL_RENDERER_SOFTWARE);
+	renderer = SDL_CreateRenderer(game_window, -1, SDL_RENDERER_ACCELERATED);
 
 	if (renderer == NULL) {
 		printf("Renderer could not be created! Error: %s\n", SDL_GetError());
