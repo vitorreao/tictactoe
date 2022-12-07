@@ -3,6 +3,12 @@
 
 #include "board.h"
 
+enum board_state {
+	BOARD_STATE_UNDECIDED,
+	BOARD_STATE_NOUGHT_WON,
+	BOARD_STATE_CROSS_WON,
+	BOARD_STATE_TIE,
+};
 
 enum board_tile_name {
 	BOARD_TILE_TOP_LEFT,
@@ -41,6 +47,7 @@ static struct board_tile board_tiles[] = {
 struct game_board {
 	enum tictactoe_player current_player;
 	enum tictactoe_player board[9];
+	enum board_state      state;
 };
 
 struct board_tile *get_board_tile(int x, int y)
@@ -57,8 +64,75 @@ struct board_tile *get_board_tile(int x, int y)
 	return NULL;
 }
 
+enum board_state check_board_state_column(struct game_board *gb, int tile_value, int c)
+{
+	for (int i = c; i < 9; i += 3) {
+		if (gb->board[i] != tile_value) return BOARD_STATE_UNDECIDED;
+	}
+	if (tile_value == PLAYER_CROSS) {
+		return BOARD_STATE_CROSS_WON;
+	} else if (tile_value == PLAYER_NOUGHT) {
+		return BOARD_STATE_NOUGHT_WON;
+	}
+	return BOARD_STATE_UNDECIDED;
+}
+
+enum board_state check_board_state_line(struct game_board *gb, int tile_value, int l)
+{
+	for (int i = l; i < (l + 3); i++) {
+		if (gb->board[i] != tile_value) return BOARD_STATE_UNDECIDED;
+	}
+	if (tile_value == PLAYER_CROSS) {
+		return BOARD_STATE_CROSS_WON;
+	} else if (tile_value == PLAYER_NOUGHT) {
+		return BOARD_STATE_NOUGHT_WON;
+	}
+	return BOARD_STATE_UNDECIDED;
+}
+
+enum board_state check_board_state_diagonal(struct game_board *gb, int tile_value, int d, int step, int max)
+{
+	for (int i = d; i <= max; i += step) {
+		if (gb->board[i] != tile_value) return BOARD_STATE_UNDECIDED;
+	}
+	if (tile_value == PLAYER_CROSS) {
+		return BOARD_STATE_CROSS_WON;
+	} else if (tile_value == PLAYER_NOUGHT) {
+		return BOARD_STATE_NOUGHT_WON;
+	}
+	return BOARD_STATE_UNDECIDED;
+}
+
+void check_board_state(struct game_board *gb)
+{
+	int has_tiles_left = 0;
+	for (int i = 0; i < 9; i++) {
+		int tile_value = gb->board[i];
+		if (tile_value < 0) {
+			has_tiles_left = 1;
+			continue;
+		}
+		if ((i % 3) == i) {
+			gb->state = check_board_state_column(gb, tile_value, i);
+		}
+		if ((i % 3) == 0 && gb->state == BOARD_STATE_UNDECIDED) {
+			gb->state = check_board_state_line(gb, tile_value, i);
+		}
+		if ((i == 0 || i == 2) && gb->state == BOARD_STATE_UNDECIDED) {
+			int step = i == 0 ? 4 : 2;
+			int max = i == 0 ? 8 : 6;
+			gb->state = check_board_state_diagonal(gb, tile_value, i, step, max);
+		}
+		if (gb->state != BOARD_STATE_UNDECIDED) break;
+	}
+	if (!has_tiles_left && gb->state == BOARD_STATE_UNDECIDED) {
+		gb->state = BOARD_STATE_TIE;
+	}
+}
+
 void tictactoe_play(struct game_board *board, int x, int y)
 {
+	if (board->state != BOARD_STATE_UNDECIDED) return;
 	struct board_tile *tile = get_board_tile(x, y);
 	if (tile == NULL) return;
 	int pos_value = board->board[tile->name];
@@ -67,6 +141,7 @@ void tictactoe_play(struct game_board *board, int x, int y)
 	}
 	board->board[tile->name] = board->current_player;
 	board->current_player = (board->current_player + 1) % 2;
+	check_board_state(board);
 }
 
 void tictactoe_draw_board(
@@ -101,12 +176,13 @@ void tictactoe_draw_board(
 
 struct game_board *new_game_board()
 {
-	struct game_board *gm = malloc(sizeof(struct game_board));
+	struct game_board *gb = malloc(sizeof(struct game_board));
 	for (int i = 0; i < 9; i++) {
-		gm->board[i] = -1;
+		gb->board[i] = -1;
 	}
-	gm->current_player = PLAYER_CROSS;
-	return gm;
+	gb->current_player = PLAYER_CROSS;
+	gb->state = BOARD_STATE_UNDECIDED;
+	return gb;
 }
 
 void destroy_game_board(struct game_board *gb)
