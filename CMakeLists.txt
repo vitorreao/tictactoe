@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.13)
 project(tictactoe)
 
 # 1. Look for a SDL2 package, 2. look for the SDL2 component and 3. fail if none can be found
@@ -8,6 +8,14 @@ find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 
 find_package(SDL2_image REQUIRED)
+
+# Begin: GDK
+add_library(gdk "")
+
+add_subdirectory(include)
+add_subdirectory(src)
+add_subdirectory(test)
+# End: GDK
 
 # Create your game executable target as usual 
 add_executable(tictactoe WIN32 main.c board.h board.c manager.h manager.c resources.h resources.c)
